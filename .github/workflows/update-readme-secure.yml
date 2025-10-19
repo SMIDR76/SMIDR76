@@ -1,0 +1,57 @@
+name: Secure Update Profile README
+
+on:
+  schedule:
+    - cron: '0 0 * * *' # daily at 00:00 UTC
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+concurrency:
+  group: update-readme
+  cancel-in-progress: true
+
+jobs:
+  update-readme:
+    runs-on: ubuntu-24.04
+    if: github.event_name != 'pull_request'
+    environment: production
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Validate secrets (no secrets are printed)
+        run: |
+          if [ -z "${{ secrets.GITHUB_TOKEN }}" ]; then echo "ERROR: GITHUB_TOKEN not available"; exit 1; fi
+          if [ -z "${{ secrets.WAKATIME_API_KEY }}" ]; then echo "WARNING: WAKATIME_API_KEY not set. WakaTime stats will be skipped or partial."; fi
+
+      - name: Update Profile README with Waka stats (pinned)
+        uses: anmol098/waka-readme-stats@ebb9e39b510045d5044c4453bf4708adcdfbfd8e
+        with:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          WAKATIME_API_KEY: ${{ secrets.WAKATIME_API_KEY }}
+          SHOW_LINES_OF_CODE: True
+          SHOW_PROFILE_VIEWS: False
+          SHOW_COMMIT: True
+          SHOW_DAYS_OF_WEEK: True
+          SHOW_LANGUAGE: True
+          SHOW_OS: True
+          SHOW_PROJECTS: True
+          SHOW_TIMEZONE: True
+          SHOW_EDITORS: True
+          SHOW_LANGUAGE_PER_REPO: True
+          SHOW_SHORT_INFO: True
+          SHOW_LOC_CHART: True
+          SECTION_NAME: waka
+          SHOW_UPDATED_DATE: True
+          SHOW_TOTAL_CODE_TIME: True
+          COMMIT_BY_ME: False
+          COMMIT_MESSAGE: Updated with Dev Metrics
+          COMMIT_SINGLE: False
+          LOCALE: en
+          UPDATED_DATE_FORMAT: '%d/%m/%Y %H:%M:%S'
