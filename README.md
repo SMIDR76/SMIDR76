@@ -91,7 +91,6 @@ I'm a passionate developer focused on building clean, scalable solutions. I love
 | **System Programming** | Low-level C/C++ projects     | C, C++, Linux                |
 | **Web Applications**   | Full-stack development       | Node.js, React, PostgreSQL   |
 | **Discord Bot**        | Automation & community tools | JavaScript, Discord.js       |
-|------------------------|------------------------------|------------------------------|
 
 </div>
 
