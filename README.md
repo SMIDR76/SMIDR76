@@ -69,16 +69,11 @@ I'm a passionate developer focused on building clean, scalable solutions. I love
 
 ## 📊 GitHub Stats
 
-<div align="center">
+Here are some statistics about my GitHub activity:
 
-<img width="48%" src="https://github-readme-stats.vercel.app/api?username=SMIDR76&show_icons=true&count_private=true&hide_border=true&theme=github_light" alt="GitHub Stats" />
-<img width="48%" src="https://github-readme-stats.vercel.app/api/top-langs/?username=SMIDR76&layout=compact&hide_border=true&theme=github_light&langs_count=8" alt="Top Languages" />
-
-<img width="99%" src="https://github-readme-streak-stats.herokuapp.com/?user=SMIDR76&theme=github-light&hide_border=true" alt="GitHub Streak" />
-
-<img width="99%" src="https://github-readme-activity-graph.vercel.app/graph?username=SMIDR76&theme=github-light&hide_border=true" alt="Activity Graph" />
-
-</div>
+- 📈 Check out my [GitHub profile](https://github.com/SMIDR76) for detailed stats
+- 🔥 Visit [GitHub Stats](https://github.com/SMIDR76?tab=repositories) to see my repositories
+- 📊 Browse my [contributions](https://github.com/SMIDR76?tab=overview&from=2024-01-01&to=2024-12-31)
 
 ---
 
