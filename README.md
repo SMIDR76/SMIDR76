@@ -113,7 +113,7 @@ I'm a passionate developer focused on building clean, scalable solutions. I love
 I'm always open to discussing interesting projects, collaborations, or just tech talk!
 
 - 📧 **Email:** cenkkenan@proton.me
-- 🐦 **Twitter:** [@your-twitter](https://x.com/Thorfinsonn)
+- 🐦 **Twitter:** [My Twitter](https://x.com/Thorfinsonn)
 - 💬 **Discord:** smidr
 
 ---
