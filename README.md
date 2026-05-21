@@ -12,8 +12,6 @@
 
 <br><br>
 
-<img width="100%" src="assets/editor.jpg" />
-
 <br><br>
 
 </div>
