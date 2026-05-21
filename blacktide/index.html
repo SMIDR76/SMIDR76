@@ -1,0 +1,1525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>BlackTide — Nomadic Interactive</title>
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Bebas+Neue&family=Inter:wght@300;400;500;600&display=swap');
+
+    :root {
+      --black:   #08080A;
+      --iron:    #1A1C1E;
+      --teal:    #00F0FF;
+      --teal-dim:#007A80;
+      --rust:    #8B3A28;
+      --ochre:   #B8622A;
+      --ash:     #4A4C50;
+      --text:    #C8CDD5;
+      --text-dim:#6E737A;
+    }
+
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+    html, body {
+      width:100%; min-height:100%;
+      background: var(--black);
+      overflow-x: hidden;
+      font-family: 'Inter', system-ui, sans-serif;
+      color: var(--text);
+      scroll-behavior: smooth;
+    }
+
+    /* ── Canvas ── */
+    canvas {
+      position: fixed;
+      top:0; left:0;
+      width:100vw; height:100vh;
+      z-index: 0;
+    }
+
+    /* ── Progress bar ── */
+    .progress-bar {
+      position:fixed; top:0; left:0;
+      height:2px;
+      background: var(--teal);
+      box-shadow: 0 0 12px var(--teal);
+      z-index:300; width:0;
+      transition: width 0.1s linear;
+    }
+
+    /* ── Scroll container ── */
+    #scroll-container {
+      position:relative; z-index:1;
+      pointer-events:none;
+      will-change:transform;
+    }
+
+    .section {
+      position:relative;
+      min-height:100vh;
+      display:flex; align-items:center; justify-content:center;
+      padding:80px 40px;
+      pointer-events:none;
+      scroll-snap-align:start;
+    }
+    .section * { pointer-events:auto; }
+
+    html { scroll-snap-type: y proximity; }
+
+    /* ── Reveal animation ── */
+    .revealed {
+      opacity:1 !important;
+      transform:translateY(0) !important;
+      transition: opacity 0.9s cubic-bezier(0.16,1,0.3,1),
+                  transform 0.9s cubic-bezier(0.16,1,0.3,1);
+    }
+    .delay-1 { transition-delay:0.1s !important; }
+    .delay-2 { transition-delay:0.25s !important; }
+    .delay-3 { transition-delay:0.4s !important; }
+    .delay-4 { transition-delay:0.55s !important; }
+
+    /* ══════════════════════════════
+       NAV
+    ══════════════════════════════ */
+    .nav-float {
+      position:fixed; top:0; left:0; right:0;
+      display:flex; justify-content:space-between; align-items:center;
+      padding:0 40px; height:64px;
+      z-index:100; pointer-events:none;
+      opacity:0; transition:opacity 0.6s;
+      border-bottom:1px solid rgba(0,240,255,0.06);
+      background:rgba(8,8,10,0.6);
+      backdrop-filter:blur(14px);
+    }
+    .nav-float.visible { opacity:1; }
+
+    .nav-logo {
+      font-family:'Bebas Neue',sans-serif;
+      font-size:20px; letter-spacing:3px;
+      color: var(--teal);
+      text-shadow: 0 0 18px rgba(0,240,255,0.45);
+      pointer-events:auto;
+    }
+    .nav-logo span { color:var(--text); }
+
+    .nav-links { display:flex; gap:32px; pointer-events:auto; }
+    .nav-links a {
+      font-size:10px; letter-spacing:3px;
+      text-transform:uppercase;
+      color: var(--text-dim);
+      text-decoration:none;
+      transition:color 0.3s, text-shadow 0.3s;
+      font-weight:500;
+    }
+    .nav-links a:hover {
+      color: var(--teal);
+      text-shadow: 0 0 10px rgba(0,240,255,0.5);
+    }
+
+    .nav-hamburger {
+      display:none; pointer-events:auto;
+      width:36px; height:36px;
+      background:rgba(26,28,30,0.7);
+      backdrop-filter:blur(12px);
+      border:1px solid rgba(0,240,255,0.15);
+      border-radius:4px; cursor:pointer;
+      position:relative; flex-shrink:0;
+      transition:background 0.3s, border-color 0.3s;
+    }
+    .nav-hamburger:hover { background:rgba(0,240,255,0.08); border-color:rgba(0,240,255,0.4); }
+    .nav-hamburger span {
+      position:absolute; left:50%; transform:translateX(-50%);
+      width:16px; height:1.5px;
+      background:var(--text); border-radius:1px;
+      transition:transform 0.3s, opacity 0.3s;
+    }
+    .nav-hamburger span:nth-child(1) { top:10px; }
+    .nav-hamburger span:nth-child(2) { top:17px; }
+    .nav-hamburger span:nth-child(3) { top:24px; }
+    .nav-hamburger.open span:nth-child(1) { transform:translateX(-50%) translateY(7px) rotate(45deg); }
+    .nav-hamburger.open span:nth-child(2) { opacity:0; }
+    .nav-hamburger.open span:nth-child(3) { transform:translateX(-50%) translateY(-7px) rotate(-45deg); }
+
+    .nav-mobile-overlay {
+      position:fixed; inset:0;
+      background:rgba(8,8,10,0.95); backdrop-filter:blur(24px);
+      z-index:99; display:flex; flex-direction:column;
+      align-items:center; justify-content:center; gap:36px;
+      opacity:0; visibility:hidden; pointer-events:none;
+      transition:opacity 0.35s, visibility 0.35s;
+    }
+    .nav-mobile-overlay.open { opacity:1; visibility:visible; pointer-events:auto; }
+    .nav-mobile-overlay a {
+      font-size:14px; letter-spacing:4px; text-transform:uppercase;
+      color:var(--text-dim); text-decoration:none; font-weight:500;
+      opacity:0; transform:translateY(10px);
+      transition:color 0.3s, opacity 0.35s, transform 0.35s;
+    }
+    .nav-mobile-overlay.open a { opacity:1; transform:translateY(0); }
+    .nav-mobile-overlay.open a:nth-child(1) { transition-delay:0.06s; }
+    .nav-mobile-overlay.open a:nth-child(2) { transition-delay:0.12s; }
+    .nav-mobile-overlay.open a:nth-child(3) { transition-delay:0.18s; }
+    .nav-mobile-overlay.open a:nth-child(4) { transition-delay:0.24s; }
+    .nav-mobile-overlay a:hover { color:var(--teal); }
+
+    @media (max-width:768px) {
+      .nav-links { display:none; }
+      .nav-hamburger { display:block; }
+      .nav-float { padding:0 20px; }
+    }
+
+    /* ══════════════════════════════
+       SECTION 1 — HERO (THE FLOODED SHRINE)
+    ══════════════════════════════ */
+    .hero {
+      min-height:110vh;
+      flex-direction:column;
+      gap:24px;
+      justify-content:center;
+      padding-top:64px;
+      text-align:left;
+      align-items:flex-start;
+      padding-left:8vw;
+    }
+
+    .hero-eyebrow {
+      font-family:'Share Tech Mono',monospace;
+      font-size:11px; letter-spacing:4px;
+      text-transform:uppercase;
+      color:var(--teal);
+      opacity:0; transform:translateY(20px);
+      text-shadow:0 0 12px rgba(0,240,255,0.4);
+    }
+
+    .hero-title {
+      font-family:'Bebas Neue',sans-serif;
+      font-size:clamp(72px,13vw,180px);
+      line-height:0.92;
+      letter-spacing:4px;
+      color:#fff;
+      opacity:0; transform:translateY(50px);
+      position:relative;
+      user-select:none;
+    }
+
+    /* Glitch effect on hero title */
+    .hero-title .glitch {
+      position:relative;
+      display:inline-block;
+      color:#fff;
+      text-shadow:
+        0 0 30px rgba(0,240,255,0.15),
+        0 0 80px rgba(0,240,255,0.05);
+    }
+    .hero-title .glitch::before,
+    .hero-title .glitch::after {
+      content:attr(data-text);
+      position:absolute; top:0; left:0;
+      width:100%; height:100%;
+      overflow:hidden;
+    }
+    .hero-title .glitch::before {
+      left:2px; text-shadow:-2px 0 var(--teal);
+      animation:glitch-before 3.5s infinite steps(1);
+      clip-path:polygon(0 0,100% 0,100% 35%,0 35%);
+    }
+    .hero-title .glitch::after {
+      left:-2px; text-shadow:2px 0 var(--rust);
+      animation:glitch-after 3.5s infinite steps(1);
+      clip-path:polygon(0 65%,100% 65%,100% 100%,0 100%);
+    }
+    @keyframes glitch-before {
+      0%,90%  { transform:translateX(0); opacity:0; }
+      91%     { opacity:1; transform:translateX(-3px) skewX(-2deg); }
+      93%     { transform:translateX(3px); }
+      95%     { opacity:1; transform:translateX(0); }
+      96%,100%{ opacity:0; }
+    }
+    @keyframes glitch-after {
+      0%,88%  { transform:translateX(0); opacity:0; }
+      89%     { opacity:1; transform:translateX(3px) skewX(2deg); }
+      92%     { transform:translateX(-3px); }
+      94%     { opacity:1; transform:translateX(0); }
+      95%,100%{ opacity:0; }
+    }
+
+    .hero-sub {
+      font-size:clamp(13px,1.4vw,16px);
+      line-height:1.75;
+      max-width:480px;
+      color:var(--text-dim);
+      font-weight:300;
+      opacity:0; transform:translateY(24px);
+      border-left:2px solid var(--rust);
+      padding-left:16px;
+    }
+
+    .cta-enter {
+      display:inline-flex; align-items:center; gap:12px;
+      padding:14px 36px;
+      border:1px solid var(--teal);
+      border-radius:2px;
+      background:rgba(0,240,255,0.04);
+      color:var(--teal);
+      font-family:'Share Tech Mono',monospace;
+      font-size:12px; letter-spacing:3px;
+      text-transform:uppercase;
+      cursor:pointer; text-decoration:none;
+      position:relative; overflow:hidden;
+      opacity:0; transform:translateY(20px);
+      transition:background 0.3s, box-shadow 0.3s, transform 0.15s;
+    }
+    .cta-enter::before {
+      content:'';
+      position:absolute; inset:0;
+      background:linear-gradient(90deg,transparent,rgba(0,240,255,0.08),transparent);
+      transform:translateX(-100%);
+      transition:transform 0.5s;
+    }
+    .cta-enter:hover::before { transform:translateX(100%); }
+    .cta-enter:hover {
+      background:rgba(0,240,255,0.1);
+      box-shadow:0 0 24px rgba(0,240,255,0.25), inset 0 0 24px rgba(0,240,255,0.04);
+      transform:translateY(-1px) !important;
+    }
+    .cta-enter .btn-icon { font-size:16px; }
+
+    .hero-scan-line {
+      position:absolute; bottom:0; left:0; right:0;
+      height:1px;
+      background:linear-gradient(90deg,transparent,rgba(0,240,255,0.3),transparent);
+      animation:scanline 4s linear infinite;
+    }
+    @keyframes scanline {
+      0%   { transform:translateY(0) scaleX(0); opacity:0; }
+      10%  { opacity:1; transform:translateY(0) scaleX(1); }
+      100% { transform:translateY(-100vh) scaleX(1); opacity:0; }
+    }
+
+    .scroll-hint {
+      display:flex; flex-direction:column; align-items:flex-start; gap:8px;
+      opacity:0; margin-top:12px;
+    }
+    .scroll-hint span {
+      font-family:'Share Tech Mono',monospace;
+      font-size:10px; letter-spacing:3px; text-transform:uppercase;
+      color:var(--text-dim);
+    }
+    .scroll-line {
+      width:1px; height:40px;
+      background:linear-gradient(to bottom, var(--teal), transparent);
+      animation:scrollPulse 2s ease-in-out infinite;
+    }
+    @keyframes scrollPulse {
+      0%,100% { opacity:0.3; transform:scaleY(0.6); }
+      50%     { opacity:1;   transform:scaleY(1); }
+    }
+
+    /* ══════════════════════════════
+       SECTION 2 — STORY
+    ══════════════════════════════ */
+    .story {
+      flex-direction:column; gap:48px;
+      text-align:center; min-height:100vh;
+    }
+
+    .section-tag {
+      font-family:'Share Tech Mono',monospace;
+      font-size:10px; letter-spacing:5px;
+      text-transform:uppercase; color:var(--rust);
+      opacity:0; transform:translateY(16px);
+    }
+
+    .story h2 {
+      font-family:'Bebas Neue',sans-serif;
+      font-size:clamp(32px,5vw,64px);
+      letter-spacing:3px; line-height:1.15;
+      color:#fff;
+      opacity:0; transform:translateY(30px);
+    }
+    .story h2 em {
+      color:var(--teal);
+      font-style:normal;
+      text-shadow:0 0 24px rgba(0,240,255,0.3);
+    }
+
+    .typewriter-wrap {
+      max-width:640px; text-align:center;
+      opacity:0; transform:translateY(24px);
+    }
+    .typewriter-text {
+      font-size:clamp(14px,1.5vw,17px);
+      line-height:1.85;
+      color:var(--text-dim);
+      font-weight:300;
+    }
+
+    .story-grid {
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:32px; max-width:960px; width:100%;
+      opacity:0; transform:translateY(30px);
+    }
+    @media(max-width:640px) { .story-grid { grid-template-columns:1fr; } }
+
+    .story-card {
+      border:1px solid rgba(139,58,40,0.25);
+      border-radius:4px;
+      padding:32px 28px;
+      background:rgba(26,28,30,0.6);
+      backdrop-filter:blur(16px);
+      text-align:left;
+      transition:border-color 0.4s, background 0.4s;
+    }
+    .story-card:hover {
+      border-color:rgba(139,58,40,0.55);
+      background:rgba(40,30,25,0.5);
+    }
+    .story-card-tag {
+      font-family:'Share Tech Mono',monospace;
+      font-size:9px; letter-spacing:3px; text-transform:uppercase;
+      color:var(--rust); margin-bottom:12px;
+    }
+    .story-card h3 {
+      font-family:'Bebas Neue',sans-serif;
+      font-size:22px; letter-spacing:2px;
+      color:#fff; margin-bottom:10px;
+    }
+    .story-card p {
+      font-size:13px; line-height:1.75;
+      color:var(--text-dim); font-weight:300;
+    }
+
+    /* ══════════════════════════════
+       SECTION 3 — SHOWCASE
+    ══════════════════════════════ */
+    .showcase {
+      flex-direction:column; gap:50px; min-height:100vh;
+    }
+
+    .showcase-header { text-align:center; opacity:0; transform:translateY(20px); }
+    .showcase-header h2 {
+      font-family:'Bebas Neue',sans-serif;
+      font-size:clamp(28px,4.5vw,56px);
+      letter-spacing:3px; color:#fff;
+      margin-top:8px;
+    }
+
+    .asset-grid {
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:24px; max-width:1100px; width:100%;
+    }
+    @media(max-width:900px) { .asset-grid { grid-template-columns:1fr 1fr; } }
+    @media(max-width:560px) { .asset-grid { grid-template-columns:1fr; max-width:380px; } }
+
+    .asset-card {
+      border:1px solid rgba(0,240,255,0.08);
+      border-radius:4px;
+      background:rgba(8,8,10,0.75);
+      backdrop-filter:blur(20px);
+      overflow:hidden;
+      opacity:0; transform:translateY(40px);
+      transition:border-color 0.4s, transform 0.4s, box-shadow 0.4s;
+      cursor:pointer;
+    }
+    .asset-card:hover {
+      border-color:rgba(0,240,255,0.35);
+      transform:translateY(-4px) !important;
+      box-shadow:0 12px 48px rgba(0,240,255,0.08), 0 0 0 1px rgba(0,240,255,0.1);
+    }
+
+    .asset-preview {
+      height:200px;
+      background:rgba(26,28,30,0.9);
+      display:flex; align-items:center; justify-content:center;
+      position:relative; overflow:hidden;
+    }
+    .asset-preview::before {
+      content:'';
+      position:absolute; inset:0;
+      background:radial-gradient(ellipse at center, rgba(0,240,255,0.04) 0%, transparent 70%);
+    }
+    .asset-icon {
+      font-size:56px; opacity:0.35;
+      filter:grayscale(0.5);
+      transition:opacity 0.3s, transform 0.3s, filter 0.3s;
+    }
+    .asset-card:hover .asset-icon {
+      opacity:0.7; transform:scale(1.08);
+      filter:grayscale(0) drop-shadow(0 0 12px var(--teal));
+    }
+
+    /* Wireframe corner decorations */
+    .asset-preview::after {
+      content:'';
+      position:absolute;
+      inset:8px;
+      border:1px solid rgba(0,240,255,0.07);
+      border-radius:2px;
+      pointer-events:none;
+    }
+
+    .asset-info { padding:22px 20px; }
+    .asset-num {
+      font-family:'Share Tech Mono',monospace;
+      font-size:9px; letter-spacing:3px;
+      color:var(--teal); opacity:0.6; margin-bottom:8px;
+    }
+    .asset-info h3 {
+      font-family:'Bebas Neue',sans-serif;
+      font-size:18px; letter-spacing:2px;
+      color:#fff; margin-bottom:8px;
+    }
+    .asset-info p {
+      font-size:12px; line-height:1.65;
+      color:var(--text-dim); font-weight:300;
+    }
+
+    .stat-tags {
+      display:flex; flex-wrap:wrap; gap:6px; margin-top:14px;
+    }
+    .stat-tag {
+      font-family:'Share Tech Mono',monospace;
+      font-size:9px; letter-spacing:1px;
+      padding:3px 8px;
+      border:1px solid rgba(0,240,255,0.15);
+      border-radius:2px;
+      color:var(--teal); opacity:0.7;
+      background:rgba(0,240,255,0.04);
+    }
+    .stat-tag.rust {
+      border-color:rgba(139,58,40,0.3);
+      color:var(--ochre); opacity:0.8;
+      background:rgba(139,58,40,0.06);
+    }
+
+    /* ══════════════════════════════
+       SECTION 4 — STUDIO
+    ══════════════════════════════ */
+    .studio-section {
+      flex-direction:column; gap:32px;
+      min-height:100vh; text-align:center;
+      align-items:center; justify-content:center;
+    }
+
+    .studio-card {
+      max-width:560px; width:100%;
+      border:1px solid rgba(255,255,255,0.08);
+      border-radius:6px;
+      background:rgba(26,28,30,0.55);
+      backdrop-filter:blur(28px);
+      padding:48px 40px;
+      opacity:0; transform:translateY(40px);
+      position:relative; overflow:hidden;
+    }
+    .studio-card::before {
+      content:'';
+      position:absolute; top:0; left:0; right:0;
+      height:1px;
+      background:linear-gradient(90deg,transparent,var(--teal),transparent);
+      opacity:0.4;
+    }
+
+    .studio-card h2 {
+      font-family:'Bebas Neue',sans-serif;
+      font-size:clamp(28px,4vw,44px);
+      letter-spacing:3px; color:#fff;
+      margin-bottom:4px;
+    }
+    .studio-card h2 em {
+      color:var(--teal); font-style:normal;
+      text-shadow:0 0 20px rgba(0,240,255,0.3);
+    }
+    .studio-tagline {
+      font-family:'Share Tech Mono',monospace;
+      font-size:11px; letter-spacing:3px;
+      color:var(--rust); margin-bottom:24px;
+    }
+    .studio-desc {
+      font-size:14px; line-height:1.8;
+      color:var(--text-dim); font-weight:300;
+      margin-bottom:32px;
+    }
+
+    /* Terminal input */
+    .terminal-form {
+      display:flex; flex-direction:column; gap:12px;
+      position:relative;
+    }
+    .terminal-label {
+      font-family:'Share Tech Mono',monospace;
+      font-size:10px; letter-spacing:3px;
+      color:var(--teal); text-align:left;
+      opacity:0.7;
+    }
+    .terminal-input-wrap {
+      display:flex; gap:0;
+      border:1px solid rgba(0,240,255,0.2);
+      border-radius:2px; overflow:hidden;
+      background:rgba(0,0,0,0.5);
+      transition:border-color 0.3s, box-shadow 0.3s;
+    }
+    .terminal-input-wrap:focus-within {
+      border-color:rgba(0,240,255,0.5);
+      box-shadow:0 0 16px rgba(0,240,255,0.1);
+    }
+    .terminal-prompt {
+      font-family:'Share Tech Mono',monospace;
+      font-size:12px; padding:12px 14px;
+      color:var(--teal); opacity:0.6;
+      background:rgba(0,240,255,0.04);
+      border-right:1px solid rgba(0,240,255,0.1);
+      white-space:nowrap;
+    }
+    .terminal-input {
+      flex:1; padding:12px 14px;
+      background:transparent; border:none; outline:none;
+      font-family:'Share Tech Mono',monospace;
+      font-size:12px; color:var(--text);
+      letter-spacing:1px;
+    }
+    .terminal-input::placeholder { color:var(--text-dim); opacity:0.5; }
+    .terminal-submit {
+      padding:12px 20px;
+      background:rgba(0,240,255,0.08);
+      border:none; border-left:1px solid rgba(0,240,255,0.1);
+      color:var(--teal); cursor:pointer;
+      font-family:'Share Tech Mono',monospace;
+      font-size:11px; letter-spacing:2px;
+      text-transform:uppercase;
+      transition:background 0.3s;
+    }
+    .terminal-submit:hover { background:rgba(0,240,255,0.18); }
+
+    /* Stat strip */
+    .stats-strip {
+      display:flex; gap:0; margin-top:8px;
+      border:1px solid rgba(255,255,255,0.05);
+      border-radius:2px; overflow:hidden;
+    }
+    .strip-stat {
+      flex:1; padding:16px 12px; text-align:center;
+      border-right:1px solid rgba(255,255,255,0.05);
+      background:rgba(0,0,0,0.3);
+      opacity:0; transform:translateY(20px);
+    }
+    .strip-stat:last-child { border-right:none; }
+    .strip-num {
+      font-family:'Bebas Neue',sans-serif;
+      font-size:28px; letter-spacing:2px;
+      color:var(--teal);
+      text-shadow:0 0 16px rgba(0,240,255,0.25);
+      line-height:1;
+    }
+    .strip-label {
+      font-family:'Share Tech Mono',monospace;
+      font-size:8px; letter-spacing:2px;
+      color:var(--text-dim); margin-top:6px;
+      text-transform:uppercase;
+    }
+
+    /* ══════════════════════════════
+       FOOTER
+    ══════════════════════════════ */
+    .site-footer {
+      position:relative; z-index:2;
+      border-top:1px solid rgba(0,240,255,0.06);
+      background:#000;
+      padding:60px 40px 40px;
+    }
+    .site-footer-inner {
+      max-width:1100px; margin:0 auto;
+      display:grid;
+      grid-template-columns:1.8fr 1fr 1fr 1fr;
+      gap:40px;
+    }
+    @media(max-width:768px) {
+      .site-footer-inner { grid-template-columns:1fr 1fr; gap:28px; }
+    }
+    @media(max-width:480px) {
+      .site-footer-inner { grid-template-columns:1fr; }
+      .site-footer { padding:40px 24px 32px; }
+    }
+
+    .sf-brand { display:flex; flex-direction:column; gap:14px; }
+    .sf-brand-name {
+      font-family:'Bebas Neue',sans-serif;
+      font-size:22px; letter-spacing:3px;
+      color:var(--teal);
+      text-shadow:0 0 16px rgba(0,240,255,0.3);
+    }
+    .sf-brand-name span { color:rgba(255,255,255,0.4); }
+    .sf-brand-sub {
+      font-family:'Share Tech Mono',monospace;
+      font-size:9px; letter-spacing:2px;
+      color:var(--rust); text-transform:uppercase;
+    }
+    .sf-brand-desc {
+      font-size:12px; line-height:1.75;
+      color:rgba(200,205,213,0.35); font-weight:300;
+      max-width:260px;
+    }
+
+    .sf-col-title {
+      font-family:'Share Tech Mono',monospace;
+      font-size:9px; letter-spacing:3px;
+      text-transform:uppercase;
+      color:rgba(0,240,255,0.35); margin-bottom:16px;
+    }
+    .sf-col a {
+      display:block; font-size:12px;
+      color:rgba(200,205,213,0.4); text-decoration:none;
+      margin-bottom:10px; font-weight:300;
+      transition:color 0.3s;
+      letter-spacing:0.5px;
+    }
+    .sf-col a:hover { color:var(--teal); }
+
+    .sf-bottom {
+      max-width:1100px; margin:36px auto 0;
+      padding-top:24px;
+      border-top:1px solid rgba(255,255,255,0.04);
+      display:flex; justify-content:space-between;
+      align-items:center; flex-wrap:wrap; gap:12px;
+    }
+    .sf-copy {
+      font-family:'Share Tech Mono',monospace;
+      font-size:10px; letter-spacing:1px;
+      color:rgba(200,205,213,0.2);
+    }
+    .sf-socials { display:flex; gap:20px; }
+    .sf-socials a {
+      font-family:'Share Tech Mono',monospace;
+      font-size:10px; letter-spacing:2px;
+      color:rgba(200,205,213,0.3); text-decoration:none;
+      text-transform:uppercase;
+      transition:color 0.3s;
+    }
+    .sf-socials a:hover { color:var(--teal); }
+
+    /* ── Settings gear ── */
+    .settings-gear {
+      position:fixed; bottom:20px; right:20px;
+      z-index:200; width:32px; height:32px;
+      border-radius:2px;
+      background:rgba(26,28,30,0.7);
+      backdrop-filter:blur(12px);
+      border:1px solid rgba(0,240,255,0.12);
+      cursor:pointer; display:flex; align-items:center; justify-content:center;
+      transition:background 0.3s, border-color 0.3s, transform 0.3s;
+      pointer-events:auto; opacity:0.4;
+    }
+    .settings-gear:hover {
+      opacity:1; background:rgba(0,240,255,0.08);
+      border-color:rgba(0,240,255,0.4);
+      transform:rotate(30deg);
+    }
+    .settings-gear.active { opacity:1; border-color:rgba(0,240,255,0.4); }
+    .settings-gear svg {
+      width:16px; height:16px; fill:none;
+      stroke:rgba(0,240,255,0.6); stroke-width:1.5;
+      stroke-linecap:round; stroke-linejoin:round;
+    }
+
+    /* ── Settings panel ── */
+    .settings-panel {
+      position:fixed; top:50%; right:24px;
+      transform:translateY(-50%) translateX(12px) scale(0.95);
+      width:300px; max-height:85vh; overflow-y:auto;
+      background:rgba(8,8,10,0.92); backdrop-filter:blur(20px);
+      border:1px solid rgba(0,240,255,0.12);
+      border-radius:4px; padding:22px 20px;
+      z-index:300; pointer-events:auto;
+      opacity:0; visibility:hidden;
+      transition:all 0.3s cubic-bezier(0.16,1,0.3,1);
+    }
+    .settings-panel.open {
+      opacity:1; transform:translateY(-50%) scale(1);
+      visibility:visible;
+    }
+    .settings-panel::-webkit-scrollbar { width:3px; }
+    .settings-panel::-webkit-scrollbar-thumb { background:rgba(0,240,255,0.15); border-radius:2px; }
+
+    .sp-section { margin-bottom:18px; }
+    .sp-section-title {
+      font-family:'Share Tech Mono',monospace;
+      font-size:8px; letter-spacing:3px; text-transform:uppercase;
+      color:rgba(0,240,255,0.3); margin-bottom:12px;
+      padding-bottom:6px; border-bottom:1px solid rgba(0,240,255,0.06);
+    }
+    .sp-row { display:flex; justify-content:space-between; align-items:center; margin-bottom:2px; }
+    .sp-label { font-size:11px; color:rgba(200,205,213,0.5); }
+    .sp-val { font-size:10px; color:rgba(0,240,255,0.5); min-width:32px; text-align:right; font-variant-numeric:tabular-nums; }
+    .sp-slider {
+      width:100%; margin-bottom:12px;
+      -webkit-appearance:none; appearance:none;
+      height:2px; border-radius:1px;
+      background:rgba(0,240,255,0.1); outline:none;
+    }
+    .sp-slider::-webkit-slider-thumb {
+      -webkit-appearance:none; width:10px; height:10px;
+      border-radius:50%; background:rgba(0,240,255,0.6);
+      cursor:pointer; transition:background 0.2s;
+    }
+    .sp-slider::-webkit-slider-thumb:hover { background:var(--teal); }
+    .sp-toggle-row { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
+    .sp-toggle {
+      position:relative; width:36px; height:20px;
+      border-radius:10px; background:rgba(0,240,255,0.1);
+      cursor:pointer; transition:background 0.3s;
+    }
+    .sp-toggle.active { background:rgba(0,240,255,0.35); }
+    .sp-toggle::after {
+      content:''; position:absolute;
+      top:3px; left:3px; width:14px; height:14px;
+      border-radius:50%; background:rgba(0,240,255,0.7);
+      transition:transform 0.3s;
+    }
+    .sp-toggle.active::after { transform:translateX(16px); }
+
+    /* ── Scanline overlay ── */
+    body::after {
+      content:'';
+      position:fixed; inset:0; z-index:500;
+      background:repeating-linear-gradient(
+        0deg,
+        transparent, transparent 2px,
+        rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px
+      );
+      pointer-events:none;
+    }
+
+    /* Hidden section spacer */
+    .section.footer { min-height:0; padding:0; display:none; }
+  </style>
+
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://unpkg.com/three@0.183.0/build/three.webgpu.js",
+      "three/webgpu": "https://unpkg.com/three@0.183.0/build/three.webgpu.js",
+      "three/tsl": "https://unpkg.com/three@0.183.0/build/three.tsl.js",
+      "three/addons/": "https://unpkg.com/three@0.183.0/examples/jsm/"
+    }
+  }
+  </script>
+</head>
+
+<body>
+
+  <div class="progress-bar" id="progressBar"></div>
+
+  <!-- NAV -->
+  <nav class="nav-float" id="navFloat">
+    <div class="nav-logo">BLACK<span>TIDE</span></div>
+    <div class="nav-links">
+      <a href="javascript:void(0)" data-nav="1">Chronicle</a>
+      <a href="javascript:void(0)" data-nav="2">Arsenal</a>
+      <a href="javascript:void(0)" data-nav="3">Studio</a>
+      <a href="javascript:void(0)" data-nav="4">Intel</a>
+    </div>
+    <button class="nav-hamburger" id="navHamburger" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+  </nav>
+
+  <div class="nav-mobile-overlay" id="navMobileOverlay">
+    <a href="javascript:void(0)" data-nav-mobile="1">Chronicle</a>
+    <a href="javascript:void(0)" data-nav-mobile="2">Arsenal</a>
+    <a href="javascript:void(0)" data-nav-mobile="3">Studio</a>
+    <a href="javascript:void(0)" data-nav-mobile="4">Intel</a>
+  </div>
+
+  <button class="settings-gear" id="settingsGear" aria-label="Settings">
+    <svg viewBox="0 0 24 24">
+      <path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"/>
+      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/>
+    </svg>
+  </button>
+  <div class="settings-panel" id="settingsPanel"></div>
+
+  <!-- SCROLL CONTAINER -->
+  <div id="scroll-container">
+
+    <!-- SECTION 1 — THE FLOODED SHRINE -->
+    <section class="section hero" id="heroSection" data-stage="0">
+      <div class="hero-scan-line"></div>
+      <span class="hero-eyebrow" data-reveal data-delay="1">// NOMADIC INTERACTIVE · PRESENTS</span>
+      <h1 class="hero-title" data-reveal data-delay="2">
+        <span class="glitch" data-text="BLACKTIDE">BLACKTIDE</span>
+      </h1>
+      <p class="hero-sub" data-reveal data-delay="3">
+        A Hardcore Post-Apocalyptic Survival Experience<br>
+        Set in the Sunken Ruins of Japan.
+      </p>
+      <a href="javascript:void(0)" class="cta-enter" data-reveal data-delay="4">
+        <span class="btn-icon">◈</span>
+        ENTER THE EXCLUSION ZONE
+      </a>
+      <div class="scroll-hint" data-reveal data-delay="4">
+        <span>↓ SCROLL TO DESCEND</span>
+        <div class="scroll-line"></div>
+      </div>
+    </section>
+
+    <!-- SECTION 2 — THE SCAVENGER'S CHRONICLES -->
+    <section class="section story" data-stage="1">
+      <span class="section-tag" data-reveal>// THE SCAVENGER'S CHRONICLES</span>
+      <h2 data-reveal data-delay="1">
+        <em>Nature</em> and the Tide took Tokyo.<br>
+        You Survive What Remains.
+      </h2>
+      <div class="typewriter-wrap" data-reveal data-delay="2">
+        <p class="typewriter-text" id="typewriterText">
+          The BlackTide rose without warning. Bioluminescent, corrosive, and alive —
+          it swallowed the coastlines and crept through every alleyway of old Tokyo.
+          Manage scarce resources. Fortify your position. Extract before the Tide rises again.
+          Every decision is permanent. Every mistake is final.
+        </p>
+      </div>
+      <div class="story-grid" data-reveal data-delay="3">
+        <div class="story-card">
+          <div class="story-card-tag">// SURVIVAL SYSTEM</div>
+          <h3>Hardcore Resource Loop</h3>
+          <p>Scavenge radiation-soaked ruins for food, fuel, and parts. Your survival depends on micro-decisions made under pressure with incomplete information.</p>
+        </div>
+        <div class="story-card">
+          <div class="story-card-tag">// WORLD DESIGN</div>
+          <h3>Drowned Tokyo</h3>
+          <p>Every district — from Shinjuku's flooded metro to Akihabara's collapsed arcades — is hand-crafted from ground truth reference and environmental storytelling.</p>
+        </div>
+        <div class="story-card">
+          <div class="story-card-tag">// THREAT MODEL</div>
+          <h3>The Tide Is Alive</h3>
+          <p>The bioluminescent fluid is not static. It responds to noise, heat, and light. Learn its rhythms or be consumed.</p>
+        </div>
+        <div class="story-card">
+          <div class="story-card-tag">// EXTRACTION</div>
+          <h3>Get Out Alive</h3>
+          <p>Every run ends at the extraction point — if you reach it. Roguelite permadeath meets immersive simulation depth in a world with no second chances.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 3 — THE LEVEL DESIGNER'S WORKBENCH -->
+    <section class="section showcase" data-stage="2">
+      <div class="showcase-header" data-reveal>
+        <span class="section-tag" style="opacity:1;transform:none;">// THE LEVEL DESIGNER'S WORKBENCH</span>
+        <h2>SURVIVAL ARSENAL</h2>
+      </div>
+      <div class="asset-grid">
+        <div class="asset-card" data-reveal data-delay="1">
+          <div class="asset-preview">
+            <span class="asset-icon">🎒</span>
+          </div>
+          <div class="asset-info">
+            <div class="asset-num">ASSET // 001</div>
+            <h3>SCAVENGER'S RUCK</h3>
+            <p>Modular survival pack with integrated Geiger counter, encrypted walkie-talkie, and chemical filter housing.</p>
+            <div class="stat-tags">
+              <span class="stat-tag">Durability: 84%</span>
+              <span class="stat-tag">Capacity: 48L</span>
+              <span class="stat-tag rust">Tide Resistance: HIGH</span>
+            </div>
+          </div>
+        </div>
+        <div class="asset-card" data-reveal data-delay="2">
+          <div class="asset-preview">
+            <span class="asset-icon">🔫</span>
+          </div>
+          <div class="asset-info">
+            <div class="asset-num">ASSET // 002</div>
+            <h3>MK-0 SCRAP RIFLE</h3>
+            <p>Field-welded from industrial pipe fittings, bound with electrical tape, and chambered for 7.62x39mm salvage rounds.</p>
+            <div class="stat-tags">
+              <span class="stat-tag">Accuracy: 61%</span>
+              <span class="stat-tag rust">Reliability: DEGRADED</span>
+              <span class="stat-tag">Range: 180m</span>
+            </div>
+          </div>
+        </div>
+        <div class="asset-card" data-reveal data-delay="3">
+          <div class="asset-preview">
+            <span class="asset-icon">🚗</span>
+          </div>
+          <div class="asset-info">
+            <div class="asset-num">ASSET // 003</div>
+            <h3>TYPE-7 SURVIVOR RIG</h3>
+            <p>Reinforced post-tide extraction vehicle. Steel mesh window guards, tide-sealed undercarriage, and salvaged police siren array.</p>
+            <div class="stat-tags">
+              <span class="stat-tag">Armor: Level III</span>
+              <span class="stat-tag rust">Tide Seal: PARTIAL</span>
+              <span class="stat-tag">Range: 340km</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 4 — NOMADIC INTERACTIVE / STUDIO -->
+    <section class="section studio-section" data-stage="3">
+      <div class="studio-card" data-reveal>
+        <h2><em>NOMADIC</em> INTERACTIVE</h2>
+        <div class="studio-tagline">// INDEPENDENT DEVELOPMENT — FOUNDED 2023</div>
+        <p class="studio-desc">
+          An elite, distributed team of engineers, artists, and designers pushing the technical limits
+          of real-time simulation. We build games that don't compromise — mechanically, narratively, or visually.
+          BlackTide is our first statement.
+        </p>
+        <div class="terminal-form">
+          <div class="terminal-label">[ INTEL UPLINK // REQUEST ACCESS ]</div>
+          <div class="terminal-input-wrap">
+            <span class="terminal-prompt">root@blacktide:~$</span>
+            <input class="terminal-input" type="email" placeholder="ENTER ACCESS KEY / EMAIL" id="emailInput" />
+            <button class="terminal-submit" onclick="handleSignup()">UPLINK</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="stats-strip" style="max-width:560px;width:100%;">
+        <div class="strip-stat" data-reveal data-delay="1">
+          <div class="strip-num">3</div>
+          <div class="strip-label">Devs</div>
+        </div>
+        <div class="strip-stat" data-reveal data-delay="2">
+          <div class="strip-num">18</div>
+          <div class="strip-label">Months</div>
+        </div>
+        <div class="strip-stat" data-reveal data-delay="3">
+          <div class="strip-num">∞</div>
+          <div class="strip-label">Iterations</div>
+        </div>
+        <div class="strip-stat" data-reveal data-delay="4">
+          <div class="strip-num">0</div>
+          <div class="strip-label">Compromises</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section footer" data-stage="4"></section>
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="site-footer">
+    <div class="site-footer-inner">
+      <div class="sf-brand">
+        <div class="sf-brand-name">BLACK<span>TIDE</span></div>
+        <div class="sf-brand-sub">// Nomadic Interactive · 2026</div>
+        <p class="sf-brand-desc">An independent development studio building uncompromising real-time experiences at the edge of technical possibility.</p>
+      </div>
+      <div class="sf-col">
+        <div class="sf-col-title">Project</div>
+        <a href="javascript:void(0)">Project BlackTide</a>
+        <a href="javascript:void(0)">Devlog</a>
+        <a href="javascript:void(0)">Roadmap</a>
+        <a href="javascript:void(0)">Media Kit</a>
+      </div>
+      <div class="sf-col">
+        <div class="sf-col-title">Studio</div>
+        <a href="javascript:void(0)">Studio Manifesto</a>
+        <a href="javascript:void(0)">Join The Team</a>
+        <a href="javascript:void(0)">GitLab / Repository</a>
+        <a href="javascript:void(0)">Press Contact</a>
+      </div>
+      <div class="sf-col">
+        <div class="sf-col-title">Intel</div>
+        <a href="javascript:void(0)">Newsletter</a>
+        <a href="javascript:void(0)">Discord Server</a>
+        <a href="javascript:void(0)">Twitter / X</a>
+        <a href="javascript:void(0)">YouTube</a>
+      </div>
+    </div>
+    <div class="sf-bottom">
+      <span class="sf-copy">© 2026 NOMADIC INTERACTIVE. ALL RIGHTS RESERVED. BLACKTIDE™ IS A TRADEMARK.</span>
+      <div class="sf-socials">
+        <a href="javascript:void(0)">DISCORD</a>
+        <a href="javascript:void(0)">GITLAB</a>
+        <a href="javascript:void(0)">TWITTER</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- THREE.JS WEBGPU PARTICLE ENGINE -->
+  <script type="module">
+    import * as THREE from 'three/webgpu';
+    import {
+      Fn, uniform, float, vec3, vec4, instancedArray, instanceIndex,
+      positionGeometry, sin, cos, pow, smoothstep, mix,
+      sqrt, select, hash, time, deltaTime, PI, mx_noise_float,
+      pass, mrt, output,
+    } from 'three/tsl';
+
+    // ── Constants ──────────────────────────────────────────────────────────
+    const EMBER_COUNT  = 18000;
+    const SPORE_COUNT  = 6000;
+    const FIELD_HALF   = 16;
+
+    // ── Scene ──────────────────────────────────────────────────────────────
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color('#08080A');
+    scene.fog = new THREE.FogExp2('#08080A', 0.045);
+
+    const camera = new THREE.PerspectiveCamera(42, innerWidth / innerHeight, 0.1, 120);
+    camera.position.set(0, 6, 18);
+    camera.lookAt(0, 2, 0);
+
+    const renderer = new THREE.WebGPURenderer({ antialias: true });
+    renderer.setPixelRatio(Math.min(devicePixelRatio, window.innerWidth < 1200 ? 1.5 : 2));
+    renderer.setSize(innerWidth, innerHeight);
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 0.85;
+    document.body.appendChild(renderer.domElement);
+    await renderer.init();
+
+    // ── Mouse world tracking ───────────────────────────────────────────────
+    const mouseWorld  = uniform(new THREE.Vector3(99999, 0, 99999));
+    const mouseRadius = uniform(5.5);
+    const mouseStrength = uniform(3.8);
+
+    // ── Particle uniforms ──────────────────────────────────────────────────
+    const windSpeed     = uniform(0.6);
+    const windAmplitude = uniform(0.18);
+    const riseSpeed     = uniform(0.22);
+    const sporeGlow     = uniform(1.0);
+    const emberSize     = uniform(1.0);
+    const sporeSize     = uniform(1.0);
+    const emberColor    = uniform(new THREE.Color('#8B3A28'));
+    const sporeColor    = uniform(new THREE.Color('#00F0FF'));
+    const turbulence    = uniform(0.35);
+
+    // ── GPU buffers ────────────────────────────────────────────────────────
+    const emberData  = instancedArray(EMBER_COUNT, 'vec4');  // x,y,z, life
+    const sporeData  = instancedArray(SPORE_COUNT, 'vec4');
+    const emberVel   = instancedArray(EMBER_COUNT, 'vec4');
+    const sporeVel   = instancedArray(SPORE_COUNT, 'vec4');
+
+    // ── Compute: init embers ───────────────────────────────────────────────
+    const computeInitEmbers = Fn(() => {
+      const p = emberData.element(instanceIndex);
+      const v = emberVel.element(instanceIndex);
+      const seed = instanceIndex;
+      const rx = hash(seed).sub(0.5).mul(FIELD_HALF * 2);
+      const ry = hash(seed.add(1111)).mul(10.0).sub(1.0);
+      const rz = hash(seed.add(2222)).sub(0.5).mul(FIELD_HALF * 2);
+      p.x.assign(rx); p.y.assign(ry); p.z.assign(rz);
+      p.w.assign(hash(seed.add(3333)));
+      v.x.assign(hash(seed.add(4444)).sub(0.5).mul(0.04));
+      v.y.assign(hash(seed.add(5555)).mul(0.08).add(0.02));
+      v.z.assign(hash(seed.add(6666)).sub(0.5).mul(0.04));
+      v.w.assign(0.0);
+    })().compute(EMBER_COUNT);
+
+    const computeInitSpores = Fn(() => {
+      const p = sporeData.element(instanceIndex);
+      const v = sporeVel.element(instanceIndex);
+      const seed = instanceIndex.add(99999);
+      const rx = hash(seed).sub(0.5).mul(FIELD_HALF * 1.4);
+      const ry = hash(seed.add(1111)).mul(8.0).sub(0.5);
+      const rz = hash(seed.add(2222)).sub(0.5).mul(FIELD_HALF * 1.4);
+      p.x.assign(rx); p.y.assign(ry); p.z.assign(rz);
+      p.w.assign(hash(seed.add(3333)));
+      v.x.assign(hash(seed.add(4444)).sub(0.5).mul(0.02));
+      v.y.assign(hash(seed.add(5555)).mul(0.05).add(0.01));
+      v.z.assign(hash(seed.add(6666)).sub(0.5).mul(0.02));
+      v.w.assign(0.0);
+    })().compute(SPORE_COUNT);
+
+    await renderer.computeAsync(computeInitEmbers);
+    await renderer.computeAsync(computeInitSpores);
+
+    // ── Compute: update embers ─────────────────────────────────────────────
+    const computeUpdateEmbers = Fn(() => {
+      const p = emberData.element(instanceIndex);
+      const v = emberVel.element(instanceIndex);
+      const dt = deltaTime;
+      const t  = time;
+      const seed = instanceIndex;
+
+      // Wind wobble
+      const wx = sin(t.mul(windSpeed).add(p.z.mul(0.4)).add(seed.toFloat().mul(0.0012))).mul(windAmplitude);
+      const wz = cos(t.mul(windSpeed.mul(0.7)).add(p.x.mul(0.3))).mul(windAmplitude.mul(0.5));
+
+      // Mouse repel
+      const dx = p.x.sub(mouseWorld.x);
+      const dz = p.z.sub(mouseWorld.z);
+      const dist2 = dx.mul(dx).add(dz.mul(dz));
+      const inRange = dist2.lessThan(mouseRadius.mul(mouseRadius));
+      const invDist = float(1.0).div(sqrt(dist2).add(0.001));
+      const repelX = select(inRange, dx.mul(invDist).mul(mouseStrength).mul(dt), float(0));
+      const repelZ = select(inRange, dz.mul(invDist).mul(mouseStrength).mul(dt), float(0));
+
+      // Turbulence noise
+      const turb = mx_noise_float(vec3(p.x.mul(0.15), t.mul(0.3), p.z.mul(0.15))).mul(turbulence);
+
+      // Integrate
+      const nx = p.x.add(v.x.add(wx).add(repelX).mul(dt).mul(60.0));
+      const ny = p.y.add(v.y.add(riseSpeed).add(turb).mul(dt).mul(60.0));
+      const nz = p.z.add(v.z.add(wz).add(repelZ).mul(dt).mul(60.0));
+
+      // Wrap Y — respawn below when too high
+      const resetY = ny.greaterThan(12.0);
+      const spawnY = hash(seed.add(t.mul(1000.0).toInt())).sub(2.0);
+      p.x.assign(select(resetY, hash(seed.add(t.mul(777.0).toInt())).sub(0.5).mul(FIELD_HALF * 2), nx));
+      p.y.assign(select(resetY, spawnY, ny));
+      p.z.assign(select(resetY, hash(seed.add(t.mul(333.0).toInt())).sub(0.5).mul(FIELD_HALF * 2), nz));
+    })().compute(EMBER_COUNT);
+
+    const computeUpdateSpores = Fn(() => {
+      const p = sporeData.element(instanceIndex);
+      const v = sporeVel.element(instanceIndex);
+      const dt = deltaTime;
+      const t  = time;
+      const seed = instanceIndex.add(99999);
+
+      const wx = sin(t.mul(windSpeed.mul(0.5)).add(p.z.mul(0.25)).add(seed.toFloat().mul(0.0008))).mul(windAmplitude.mul(0.7));
+      const wz = cos(t.mul(windSpeed.mul(0.35)).add(p.x.mul(0.2))).mul(windAmplitude.mul(0.4));
+
+      const dx = p.x.sub(mouseWorld.x);
+      const dz = p.z.sub(mouseWorld.z);
+      const dist2 = dx.mul(dx).add(dz.mul(dz));
+      const inRange = dist2.lessThan(mouseRadius.mul(mouseRadius.mul(1.5)));
+      const invDist = float(1.0).div(sqrt(dist2).add(0.001));
+      const repelX = select(inRange, dx.mul(invDist).mul(mouseStrength.mul(0.6)).mul(dt), float(0));
+      const repelZ = select(inRange, dz.mul(invDist).mul(mouseStrength.mul(0.6)).mul(dt), float(0));
+
+      const nx = p.x.add(v.x.add(wx).add(repelX).mul(dt).mul(60.0));
+      const ny = p.y.add(v.y.add(riseSpeed.mul(0.55)).mul(dt).mul(60.0));
+      const nz = p.z.add(v.z.add(wz).add(repelZ).mul(dt).mul(60.0));
+
+      const resetY = ny.greaterThan(10.0);
+      const spawnY = hash(seed.add(t.mul(500.0).toInt())).sub(1.5);
+      p.x.assign(select(resetY, hash(seed.add(t.mul(888.0).toInt())).sub(0.5).mul(FIELD_HALF * 1.4), nx));
+      p.y.assign(select(resetY, spawnY, ny));
+      p.z.assign(select(resetY, hash(seed.add(t.mul(444.0).toInt())).sub(0.5).mul(FIELD_HALF * 1.4), nz));
+    })().compute(SPORE_COUNT);
+
+    // ── Instanced billboard geometry (small quad) ──────────────────────────
+    function makeBillboardMesh(count, dataBuffer, colorUniform, sizeUniform, isSpore) {
+      const geo = new THREE.PlaneGeometry(1, 1);
+      const mat = new THREE.MeshBasicNodeMaterial({ transparent: true, depthWrite: false, blending: THREE.AdditiveBlending });
+
+      mat.positionNode = Fn(() => {
+        const p = dataBuffer.element(instanceIndex);
+        const seed = isSpore ? instanceIndex.add(99999) : instanceIndex;
+        const life = p.w;
+
+        // Billboard: offset local vertex, then add world position
+        const localOff = positionGeometry.xy.mul(
+          sizeUniform.mul(isSpore ? 0.04 : 0.018).mul(
+            hash(seed.add(777)).mul(0.6).add(0.4)
+          )
+        );
+
+        const camRight = vec3(1, 0, 0);
+        const camUp    = vec3(0, 1, 0);
+
+        const worldPos = vec3(p.x, p.y, p.z)
+          .add(camRight.mul(localOff.x))
+          .add(camUp.mul(localOff.y));
+
+        return camera.projectionMatrix.mul(camera.matrixWorldInverse).mul(vec4(worldPos, 1.0));
+      })();
+
+      mat.colorNode = Fn(() => {
+        const p   = dataBuffer.element(instanceIndex);
+        const seed = isSpore ? instanceIndex.add(99999) : instanceIndex;
+        const t   = time;
+
+        // Radial alpha (soft disc)
+        const uv2 = positionGeometry.xy.add(0.5);
+        const dd  = uv2.sub(0.5);
+        const r   = sqrt(dd.x.mul(dd.x).add(dd.y.mul(dd.y))).mul(2.0);
+        const alpha = smoothstep(float(1.0), float(0.0), r);
+
+        // Flicker
+        const flicker = sin(t.mul(8.0).add(seed.toFloat().mul(0.02))).mul(0.15).add(0.85);
+
+        // Height fade
+        const heightFade = smoothstep(float(10.0), float(6.0), p.y);
+
+        const finalAlpha = alpha.mul(flicker).mul(heightFade).mul(isSpore ? sporeGlow.mul(0.55) : float(0.65));
+        return vec4(colorUniform, finalAlpha);
+      })();
+
+      const mesh = new THREE.InstancedMesh(geo, mat, count);
+      mesh.frustumCulled = false;
+      return mesh;
+    }
+
+    const emberMesh = makeBillboardMesh(EMBER_COUNT, emberData, emberColor, emberSize, false);
+    const sporeMesh = makeBillboardMesh(SPORE_COUNT, sporeData, sporeColor, sporeSize, true);
+    scene.add(emberMesh);
+    scene.add(sporeMesh);
+
+    // ── Ground plane ───────────────────────────────────────────────────────
+    {
+      const groundGeo = new THREE.PlaneGeometry(80, 80, 1, 1);
+      const groundMat = new THREE.MeshBasicNodeMaterial();
+      groundMat.colorNode = Fn(() => {
+        const t = time;
+        // Subtle teal grid pulse
+        const uv2 = positionGeometry.xz.mul(0.15);
+        const gridX = sin(uv2.x.mul(PI.mul(2.0))).abs();
+        const gridZ = sin(uv2.y.mul(PI.mul(2.0))).abs();
+        const grid  = gridX.min(gridZ);
+        const pulse = sin(t.mul(1.2)).mul(0.5).add(0.5).mul(0.04);
+        const gridA = smoothstep(float(0.95), float(1.0), grid).mul(pulse);
+        return vec4(vec3(float(0), float(0.94), float(1.0)), gridA);
+      })();
+      groundMat.transparent = true;
+      groundMat.depthWrite  = false;
+      const ground = new THREE.Mesh(groundGeo, groundMat);
+      ground.rotation.x = -Math.PI / 2;
+      ground.position.y = -1.5;
+      scene.add(ground);
+    }
+
+    // ── Ambient / directional lights ───────────────────────────────────────
+    scene.add(new THREE.AmbientLight('#0a1520', 2.0));
+    const tealLight = new THREE.PointLight('#00F0FF', 8, 30);
+    tealLight.position.set(0, 4, 0);
+    scene.add(tealLight);
+    const rustLight = new THREE.PointLight('#8B3A28', 6, 25);
+    rustLight.position.set(-8, 2, -5);
+    scene.add(rustLight);
+
+    // ── Mouse tracking ─────────────────────────────────────────────────────
+    const raycaster  = new THREE.Raycaster();
+    const mousePlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
+    const mousePos2D = new THREE.Vector2();
+    const hitPoint   = new THREE.Vector3();
+
+    window.addEventListener('mousemove', e => {
+      mousePos2D.x =  (e.clientX / innerWidth)  * 2 - 1;
+      mousePos2D.y = -(e.clientY / innerHeight) * 2 + 1;
+      raycaster.setFromCamera(mousePos2D, camera);
+      if (raycaster.ray.intersectPlane(mousePlane, hitPoint)) {
+        mouseWorld.value.set(hitPoint.x, 0, hitPoint.z);
+      }
+    });
+
+    // ── Camera scroll animation ────────────────────────────────────────────
+    const camTargets = [
+      { pos: new THREE.Vector3(0,  6,  18), look: new THREE.Vector3(0, 2, 0) },   // hero
+      { pos: new THREE.Vector3(0,  3,  14), look: new THREE.Vector3(0, 1, 0) },   // story
+      { pos: new THREE.Vector3(4,  5,  16), look: new THREE.Vector3(0, 2, 0) },   // showcase
+      { pos: new THREE.Vector3(-3, 4,  12), look: new THREE.Vector3(0, 1, 0) },   // studio
+      { pos: new THREE.Vector3(0,  2,   8), look: new THREE.Vector3(0, 0.5, 0) }, // footer
+    ];
+
+    let scrollProgress = 0;
+    let targetScroll   = 0;
+    const camPos  = new THREE.Vector3().copy(camTargets[0].pos);
+    const camLook = new THREE.Vector3().copy(camTargets[0].look);
+
+    function updateCameraFromScroll() {
+      const sections = document.querySelectorAll('[data-stage]');
+      const total = document.documentElement.scrollHeight - window.innerHeight;
+      const raw   = window.scrollY / total;
+      targetScroll = Math.max(0, Math.min(1, raw));
+
+      const stageF  = targetScroll * (camTargets.length - 1);
+      const stageI  = Math.floor(stageF);
+      const stageT  = stageF - stageI;
+      const a = camTargets[Math.min(stageI, camTargets.length - 1)];
+      const b = camTargets[Math.min(stageI + 1, camTargets.length - 1)];
+
+      camPos.lerp(a.pos.clone().lerp(b.pos, stageT), 0.06);
+      camLook.lerp(a.look.clone().lerp(b.look, stageT), 0.06);
+    }
+
+    window.addEventListener('scroll', updateCameraFromScroll, { passive: true });
+
+    // ── Resize ─────────────────────────────────────────────────────────────
+    window.addEventListener('resize', () => {
+      camera.aspect = innerWidth / innerHeight;
+      camera.fov    = innerWidth < 480 ? 56 : 42;
+      camera.updateProjectionMatrix();
+      renderer.setSize(innerWidth, innerHeight);
+    });
+
+    // ── Render loop ────────────────────────────────────────────────────────
+    let lastTime = 0;
+    async function animate(ts) {
+      requestAnimationFrame(animate);
+      const dt = Math.min((ts - lastTime) / 1000, 0.05);
+      lastTime = ts;
+
+      // Animate lights
+      tealLight.position.x = Math.sin(ts * 0.0005) * 5;
+      tealLight.position.z = Math.cos(ts * 0.0004) * 5;
+      rustLight.position.x = Math.cos(ts * 0.0004) * -7;
+
+      camera.position.copy(camPos);
+      camera.lookAt(camLook);
+
+      await renderer.computeAsync(computeUpdateEmbers);
+      await renderer.computeAsync(computeUpdateSpores);
+      renderer.renderAsync(scene, camera);
+    }
+    requestAnimationFrame(animate);
+
+    // ── Settings panel ─────────────────────────────────────────────────────
+    const settingsPanel = document.getElementById('settingsPanel');
+    const settingsGear  = document.getElementById('settingsGear');
+
+    function buildSettings() {
+      const rows = [
+        { section: 'PARTICLES', items: [
+          { label:'Ember Size',      u:emberSize,     min:0.1, max:3,   step:0.05 },
+          { label:'Spore Size',      u:sporeSize,     min:0.1, max:3,   step:0.05 },
+          { label:'Rise Speed',      u:riseSpeed,     min:0.0, max:1.0, step:0.01 },
+          { label:'Turbulence',      u:turbulence,    min:0.0, max:1.5, step:0.05 },
+        ]},
+        { section: 'ATMOSPHERE', items: [
+          { label:'Wind Speed',      u:windSpeed,     min:0.0, max:3,   step:0.05 },
+          { label:'Wind Amplitude',  u:windAmplitude, min:0.0, max:0.8, step:0.01 },
+          { label:'Spore Glow',      u:sporeGlow,     min:0.0, max:2,   step:0.05 },
+        ]},
+        { section: 'INTERACTION', items: [
+          { label:'Mouse Radius',    u:mouseRadius,   min:1,   max:12,  step:0.1 },
+          { label:'Mouse Strength',  u:mouseStrength, min:0,   max:10,  step:0.1 },
+        ]},
+      ];
+
+      let html = '';
+      rows.forEach(({ section, items }) => {
+        html += `<div class="sp-section"><div class="sp-section-title">${section}</div>`;
+        items.forEach(({ label, u, min, max, step }) => {
+          const id = 'sp-' + label.replace(/\s+/g,'-').toLowerCase();
+          html += `
+            <div class="sp-row">
+              <span class="sp-label">${label}</span>
+              <span class="sp-val" id="${id}-val">${u.value.toFixed ? u.value.toFixed(2) : u.value}</span>
+            </div>
+            <input class="sp-slider" type="range" min="${min}" max="${max}" step="${step}"
+              value="${u.value.toFixed ? u.value : u.value}"
+              oninput="(function(el){
+                var v=parseFloat(el.value);
+                window.__spUniforms['${id}'].value=v;
+                document.getElementById('${id}-val').textContent=v.toFixed(2);
+              })(this)"
+            />`;
+        });
+        html += '</div>';
+      });
+      settingsPanel.innerHTML = html;
+
+      window.__spUniforms = {};
+      rows.forEach(({ items }) => {
+        items.forEach(({ label, u }) => {
+          const id = 'sp-' + label.replace(/\s+/g,'-').toLowerCase();
+          window.__spUniforms[id] = u;
+        });
+      });
+    }
+    buildSettings();
+
+    settingsGear.addEventListener('click', () => {
+      settingsPanel.classList.toggle('open');
+      settingsGear.classList.toggle('active');
+    });
+    document.addEventListener('click', e => {
+      if (!settingsPanel.contains(e.target) && e.target !== settingsGear) {
+        settingsPanel.classList.remove('open');
+        settingsGear.classList.remove('active');
+      }
+    });
+  </script>
+
+  <!-- UI SCRIPT -->
+  <script>
+    // ── Nav visibility ─────────────────────────────────────────────────────
+    const navFloat = document.getElementById('navFloat');
+    setTimeout(() => navFloat.classList.add('visible'), 800);
+
+    // ── Progress bar ───────────────────────────────────────────────────────
+    const progressBar = document.getElementById('progressBar');
+    window.addEventListener('scroll', () => {
+      const pct = window.scrollY / (document.documentElement.scrollHeight - window.innerHeight) * 100;
+      progressBar.style.width = pct + '%';
+    }, { passive: true });
+
+    // ── Hamburger ──────────────────────────────────────────────────────────
+    const hamburger       = document.getElementById('navHamburger');
+    const mobileOverlay   = document.getElementById('navMobileOverlay');
+    hamburger.addEventListener('click', () => {
+      hamburger.classList.toggle('open');
+      mobileOverlay.classList.toggle('open');
+    });
+    mobileOverlay.querySelectorAll('a').forEach(a => {
+      a.addEventListener('click', () => {
+        hamburger.classList.remove('open');
+        mobileOverlay.classList.remove('open');
+      });
+    });
+
+    // ── Nav data-nav scroll ────────────────────────────────────────────────
+    document.querySelectorAll('[data-nav],[data-nav-mobile]').forEach(el => {
+      el.addEventListener('click', () => {
+        const idx = parseInt(el.dataset.nav || el.dataset.navMobile);
+        const sections = document.querySelectorAll('[data-stage]');
+        if (sections[idx]) sections[idx].scrollIntoView({ behavior: 'smooth' });
+      });
+    });
+
+    // ── Reveal on scroll ──────────────────────────────────────────────────
+    const revealEls = document.querySelectorAll('[data-reveal]');
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const delay = entry.target.dataset.delay;
+          if (delay) entry.target.classList.add('delay-' + delay);
+          entry.target.classList.add('revealed');
+          io.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.12 });
+    revealEls.forEach(el => io.observe(el));
+
+    // ── Hero initial reveal ────────────────────────────────────────────────
+    setTimeout(() => {
+      document.querySelectorAll('#heroSection [data-reveal]').forEach(el => {
+        const delay = el.dataset.delay;
+        if (delay) {
+          setTimeout(() => el.classList.add('revealed'), parseInt(delay) * 160);
+        } else {
+          el.classList.add('revealed');
+        }
+      });
+    }, 300);
+
+    // ── CTA button screen shake ────────────────────────────────────────────
+    document.querySelector('.cta-enter')?.addEventListener('click', () => {
+      document.body.style.animation = 'none';
+      const style = document.createElement('style');
+      style.textContent = `@keyframes shake{0%{transform:translate(0)}20%{transform:translate(-3px,2px)}40%{transform:translate(3px,-2px)}60%{transform:translate(-2px,3px)}80%{transform:translate(2px,-1px)}100%{transform:translate(0)}}`;
+      document.head.appendChild(style);
+      document.body.style.animation = 'shake 0.35s ease';
+      setTimeout(() => { document.body.style.animation = ''; }, 400);
+    });
+
+    // ── Email signup ───────────────────────────────────────────────────────
+    function handleSignup() {
+      const input = document.getElementById('emailInput');
+      const val = input.value.trim();
+      if (!val || !val.includes('@')) {
+        input.style.color = '#8B3A28';
+        input.value = 'INVALID ACCESS KEY';
+        setTimeout(() => { input.style.color = ''; input.value = ''; }, 1400);
+        return;
+      }
+      input.value = '[ ACCESS GRANTED — STANDBY FOR INTEL ]';
+      input.style.color = '#00F0FF';
+      setTimeout(() => { input.value = ''; input.style.color = ''; }, 2800);
+    }
+    window.handleSignup = handleSignup;
+    document.getElementById('emailInput')?.addEventListener('keydown', e => {
+      if (e.key === 'Enter') handleSignup();
+    });
+  </script>
+</body>
+</html>
