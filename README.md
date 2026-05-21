@@ -1,7 +1,5 @@
 <div align="center">
 
-<img width="100%" src="assets/render.jpg" />
-
 <br><br>
 
 <img src="https://readme-typing-svg.demolab.com?font=Orbitron&weight=900&size=42&duration=4000&pause=99999&color=FFFFFF&center=true&vCenter=true&width=700&height=65&lines=SMIDR" />
@@ -17,7 +15,5 @@
 <img width="100%" src="assets/editor.jpg" />
 
 <br><br>
-
-<img src="https://streak-stats.demolab.com?user=SMIDR76&theme=github-dark-blue&hide_border=true&background=0D1117&ring=333333&fire=ffffff&currStreakLabel=666666&sideLabels=666666&currStreakNum=eeeeee&sideNums=cccccc&dates=444444" />
 
 </div>
