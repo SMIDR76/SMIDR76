@@ -8,7 +8,7 @@
 
 <br>
 
-I'm Cenk, a level designer and environment artist based in Le Havre, France. I work in Unreal Engine 5 and I like carrying a level the whole way: layout and greybox first, then set dressing, then the light that makes it readable.
+I'm Cenk, a level designer and environment artist based in France. I work in Unreal Engine 5 and I like carrying a level the whole way: layout and greybox first, then set dressing, then the light that makes it readable.
 
 Five projects below. Full-resolution renders and breakdowns live on [ArtStation](https://www.artstation.com/cenk_k).
 
