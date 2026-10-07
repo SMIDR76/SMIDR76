@@ -12,16 +12,7 @@ I'm Cenk, a level designer and environment artist based in Le Havre, France. I w
 
 Five projects below. Full-resolution renders and breakdowns live on [ArtStation](https://www.artstation.com/cenk_k).
 
-<br>
-
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="assets/editor-dark.jpg">
-  <source media="(prefers-color-scheme: light)" srcset="assets/editor-light.jpg">
-  <img src="assets/editor-light.jpg" width="100%" alt="The Monolith open in the Unreal Editor, with the five portfolio levels in the Content Browser.">
-</picture>
-<sub>The Monolith open in Unreal Engine 5.7. Every level on this page was blocked out, dressed and lit in-engine.</sub>
-
-<br><br><br>
+<br><br>
 
 <a href="https://www.artstation.com/artwork/xdYm1O">
   <picture>
