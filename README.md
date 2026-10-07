@@ -1,72 +1,69 @@
 <a href="https://www.artstation.com/cenk_k">
-  <img src="assets/header.svg" width="100%" alt="Cenk K. Level Designer and Environment Artist" />
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/hero-dark.jpg">
+    <source media="(prefers-color-scheme: light)" srcset="assets/hero-light.jpg">
+    <img src="assets/hero-light.jpg" width="100%" alt="Cenk K., level designer and environment artist. Golden hour forest built in Unreal Engine 5.7.">
+  </picture>
 </a>
 
-<br />
+<br>
 
-<img src="assets/h-about.svg" width="100%" alt="01 About" />
+I'm Cenk, a level designer and environment artist based in Le Havre, France. I work in Unreal Engine 5 and I like carrying a level the whole way: layout and greybox first, then set dressing, then the light that makes it readable.
 
-I'm a level designer and environment artist based in Le Havre, France. I build playable spaces in **Unreal Engine 5** and I like owning them end to end: the top-down sketch, the greybox that gets torn apart in playtests, the art pass, and the last light that quietly tells you where to go.
+Five projects below. Full-resolution renders and breakdowns live on [ArtStation](https://www.artstation.com/cenk_k).
 
-What I care about: layouts that read at a glance, cover that makes tactical sense, and places that feel like something happened there before the player arrived.
+<br>
 
-<br />
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="assets/editor-dark.jpg">
+  <source media="(prefers-color-scheme: light)" srcset="assets/editor-light.jpg">
+  <img src="assets/editor-light.jpg" width="100%" alt="The Monolith open in the Unreal Editor, with the five portfolio levels in the Content Browser.">
+</picture>
+<sub>The Monolith open in Unreal Engine 5.7. Every level on this page was blocked out, dressed and lit in-engine.</sub>
 
-<img src="assets/h-pipeline.svg" width="100%" alt="02 Pipeline" />
+<br><br><br>
 
-<img src="assets/pipeline.svg" width="100%" alt="The same space shown in four passes: layout, blockout, art pass and lighting" />
-
-<br />
-
-<img src="assets/h-skills.svg" width="100%" alt="03 Disciplines" />
-
-<img src="assets/disciplines.svg" width="100%" alt="Level design: paper design, blockout, flow and pacing, guidance, combat spaces, scripting. Environment art: worldbuilding, terrain, set dressing, foliage and PCG, lighting, optimization." />
-
-<br />
-
-<img src="assets/h-work.svg" width="100%" alt="04 Selected work" />
-
-<table>
-  <tr>
-    <td width="33%" valign="top">
-      <a href="https://www.artstation.com/artwork/Ba3Kq9"><img src="https://cdna.artstation.com/p/assets/covers/images/101/923/368/small_square/smidr-smidr-sans-titre.jpg?1787778445" width="100%" alt="The Forest" /></a>
-      <br /><b>THE FOREST</b>
-      <br /><sub>Tactical forest at golden hour. Cover, pathing and Lumen lighting.</sub>
-    </td>
-    <td width="33%" valign="top">
-      <a href="https://www.artstation.com/artwork/xdYm1O"><img src="https://cdnb.artstation.com/p/assets/covers/images/101/923/905/small_square/smidr-smidr-brutalism.jpg?1787779834" width="100%" alt="The Monolith" /></a>
-      <br /><b>THE MONOLITH</b>
-      <br /><sub>Brutalist government facility inspired by Control. Built 1:1 for readability.</sub>
-    </td>
-    <td width="33%" valign="top">
-      <a href="https://www.artstation.com/artwork/bg6nLv"><img src="https://cdna.artstation.com/p/assets/covers/images/101/923/882/small_square/smidr-smidr-abondonnedtown.jpg?1787779701" width="100%" alt="Abandoned City" /></a>
-      <br /><b>ABANDONED CITY</b>
-      <br /><sub>Quarantine zone after 20 years of neglect. Tactical cover and organic decay.</sub>
-    </td>
-  </tr>
-  <tr>
-    <td width="33%" valign="top">
-      <a href="https://www.artstation.com/artwork/egJ3nY"><img src="https://cdnb.artstation.com/p/assets/covers/images/101/923/697/small_square/smidr-smidr-document.jpg?1787779267" width="100%" alt="The Temple" /></a>
-      <br /><b>THE TEMPLE</b>
-      <br /><sub>Environment composition and atmosphere in Unreal Engine 5.</sub>
-    </td>
-    <td width="33%" valign="top">
-      <a href="https://www.artstation.com/artwork/vzJYWv"><img src="https://cdna.artstation.com/p/assets/covers/images/101/923/810/small_square/smidr-smidr-firshermanicon.jpg?1787779506" width="100%" alt="Fishing Hut" /></a>
-      <br /><b>FISHING HUT</b>
-      <br /><sub>Small-scale storytelling environment and set dressing.</sub>
-    </td>
-    <td width="33%" valign="top">
-      <a href="https://www.artstation.com/cenk_k"><img src="assets/tile-more.svg" width="100%" alt="Full portfolio on ArtStation" /></a>
-      <br /><b>EVERYTHING ELSE</b>
-      <br /><sub>Breakdowns, blockouts and process shots on ArtStation.</sub>
-    </td>
-  </tr>
-</table>
-
-<br />
-
-<img src="assets/h-contact.svg" width="100%" alt="05 Contact" />
-
-<a href="https://www.artstation.com/cenk_k">
-  <img src="assets/contact.svg" width="100%" alt="artstation.com/cenk_k" />
+<a href="https://www.artstation.com/artwork/xdYm1O">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/monolith-dark.jpg">
+    <source media="(prefers-color-scheme: light)" srcset="assets/monolith-light.jpg">
+    <img src="assets/monolith-light.jpg" width="100%" alt="The Monolith: a brutalist government facility inspired by Control, built at 1:1 scale.">
+  </picture>
 </a>
+
+<br><br><br>
+
+<a href="https://www.artstation.com/artwork/egJ3nY">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/temple-dark.jpg">
+    <source media="(prefers-color-scheme: light)" srcset="assets/temple-light.jpg">
+    <img src="assets/temple-light.jpg" width="100%" alt="The Temple: three camera views, each split between the clay pass and the final pass.">
+  </picture>
+</a>
+
+<br><br><br>
+
+<a href="https://www.artstation.com/artwork/bg6nLv">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/city-dark.jpg">
+    <source media="(prefers-color-scheme: light)" srcset="assets/city-light.jpg">
+    <img src="assets/city-light.jpg" width="100%" alt="Abandoned City: an overgrown quarantine zone, final shots and clay pass.">
+  </picture>
+</a>
+
+<br><br><br>
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="assets/more-dark.jpg">
+  <source media="(prefers-color-scheme: light)" srcset="assets/more-light.jpg">
+  <img src="assets/more-light.jpg" width="100%" alt="The Forest, a tactical golden hour environment, and Fishing Hut, an interior and exterior set dressing piece.">
+</picture>
+
+<sub><a href="https://www.artstation.com/artwork/Ba3Kq9">The Forest</a> &nbsp;·&nbsp; <a href="https://www.artstation.com/artwork/vzJYWv">Fishing Hut</a></sub>
+
+<br><br>
+
+---
+
+**[artstation.com/cenk_k](https://www.artstation.com/cenk_k)**<br>
+<sub>Le Havre, France</sub>
